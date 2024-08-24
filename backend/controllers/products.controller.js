@@ -40,7 +40,7 @@ const fetchProducts = async (cmp, cat, token, n, minPrice, maxPrice) => {
 };
 
 exports.getTopProducts = catchAsync(async (req, res) => {
-  const { category } = req.params;
+  const { categoryname } = req.params;
   //   Defining the default values as well while destructuring
   const {
     n = 10,
@@ -55,7 +55,7 @@ exports.getTopProducts = catchAsync(async (req, res) => {
     cmpList.map((compy) =>
       fetchProducts(
         compy,
-        category,
+        categoryname,
         req.tokens.access_token,
         n,
         minPrice,
@@ -90,4 +90,39 @@ exports.getTopProducts = catchAsync(async (req, res) => {
     total: prods.length,
     data: paginated,
   });
+});
+
+exports.getDetails = catchAsync(async (req, res) => {
+  const { categoryname, productid } = req.params;
+
+  const responses = await Promise.all(
+    cmpList.map((cmp) => {
+      return axios
+        .get(
+          `${process.env.API_URL}/${cmp}/categories/${categoryname}/products`,
+          {
+            headers: { Authorization: `Bearer ${req.tokens.access_token}` },
+          }
+        )
+        .catch(() => null);
+    })
+  );
+
+  const product = responses.data.find((prod) => {
+    const productDet = productid.split("/");
+    if (
+      prod.productName.replace(" ", "") == productDet[0] &&
+      prod.price == productDet[1]
+    ) {
+      return true;
+    }
+  });
+
+  console.log(product);
+
+  if (product) {
+    res.json(product);
+  } else {
+    res.status(404).json({ error: "Product not found" });
+  }
 });

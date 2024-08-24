@@ -7,7 +7,7 @@ const makeId = (item) => {
 
   // Combine the company name and short ID to create a unique ID
   //   if there is a space add a - to it
-  return `${item.productName.replace(" ", "-")}-${shortid}`;
+  return `${item.productName.replace(" ", "")}/${item.price}`;
 };
 
 const paginate = (items, size, page) => {
